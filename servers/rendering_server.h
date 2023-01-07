@@ -52,6 +52,7 @@ class RenderingServer : public Object {
 
 	int mm_policy = 0;
 	bool render_loop_enabled = true;
+	bool is_frame_changing = true;
 
 	Array _get_array_from_surface(uint32_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len) const;
 
@@ -1586,6 +1587,9 @@ public:
 
 	bool is_render_loop_enabled() const;
 	void set_render_loop_enabled(bool p_enabled);
+
+	bool is_frame_changing_enabled() const;
+	void set_is_frame_changing(bool p_enabled);
 
 	RenderingServer();
 	virtual ~RenderingServer();

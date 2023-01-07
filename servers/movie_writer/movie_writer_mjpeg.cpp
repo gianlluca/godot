@@ -190,26 +190,26 @@ Error MovieWriterMJPEG::write_begin(const Size2i &p_movie_size, uint32_t p_fps, 
 	return OK;
 }
 
-Error MovieWriterMJPEG::write_frame(const Ref<Image> &p_image, const int32_t *p_audio_data) {
+Error MovieWriterMJPEG::write_frame(const bool p_is_frame_changing, const int32_t *p_audio_data) {
 	ERR_FAIL_COND_V(!f.is_valid(), ERR_UNCONFIGURED);
 
-	Vector<uint8_t> jpg_buffer = p_image->save_jpg_to_buffer(quality);
-	uint32_t s = jpg_buffer.size();
+	// Vector<uint8_t> jpg_buffer = p_image->save_jpg_to_buffer(quality);
+	// uint32_t s = jpg_buffer.size();
 
-	f->store_buffer((const uint8_t *)"00db", 4); // Stream 0, Video
-	f->store_32(jpg_buffer.size()); // sizes
-	f->store_buffer(jpg_buffer.ptr(), jpg_buffer.size());
-	if (jpg_buffer.size() & 1) {
-		f->store_8(0);
-		s++;
-	}
-	jpg_frame_sizes.push_back(s);
+	// f->store_buffer((const uint8_t *)"00db", 4); // Stream 0, Video
+	// f->store_32(jpg_buffer.size()); // sizes
+	// f->store_buffer(jpg_buffer.ptr(), jpg_buffer.size());
+	// if (jpg_buffer.size() & 1) {
+	// 	f->store_8(0);
+	// 	s++;
+	// }
+	// jpg_frame_sizes.push_back(s);
 
-	f->store_buffer((const uint8_t *)"01wb", 4); // Stream 1, Audio.
-	f->store_32(audio_block_size);
-	f->store_buffer((const uint8_t *)p_audio_data, audio_block_size);
+	// f->store_buffer((const uint8_t *)"01wb", 4); // Stream 1, Audio.
+	// f->store_32(audio_block_size);
+	// f->store_buffer((const uint8_t *)p_audio_data, audio_block_size);
 
-	frame_count++;
+	// frame_count++;
 
 	return OK;
 }

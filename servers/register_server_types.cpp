@@ -58,6 +58,7 @@
 #include "debugger/servers_debugger.h"
 #include "display_server.h"
 #include "movie_writer/movie_writer.h"
+#include "movie_writer/movie_writer_jpegwav.h"
 #include "movie_writer/movie_writer_mjpeg.h"
 #include "movie_writer/movie_writer_pngwav.h"
 #include "navigation_server_2d.h"
@@ -111,6 +112,7 @@ static bool has_server_feature_callback(const String &p_feature) {
 	return false;
 }
 
+static MovieWriterJPEGWAV *writer_jpegwav = nullptr;
 static MovieWriterMJPEG *writer_mjpeg = nullptr;
 static MovieWriterPNGWAV *writer_pngwav = nullptr;
 
@@ -281,6 +283,9 @@ void register_server_types() {
 	PhysicsServer3DManager::get_singleton()->register_server("GodotPhysics3D", callable_mp_static(_createGodotPhysics3DCallback));
 	PhysicsServer3DManager::get_singleton()->set_default_server("GodotPhysics3D");
 
+	writer_jpegwav = memnew(MovieWriterJPEGWAV);
+	MovieWriter::add_writer(writer_jpegwav);
+
 	writer_mjpeg = memnew(MovieWriterMJPEG);
 	MovieWriter::add_writer(writer_mjpeg);
 
@@ -291,6 +296,7 @@ void register_server_types() {
 void unregister_server_types() {
 	ServersDebugger::deinitialize();
 	memdelete(shader_types);
+	memdelete(writer_jpegwav);
 	memdelete(writer_mjpeg);
 	memdelete(writer_pngwav);
 }

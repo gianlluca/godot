@@ -61,7 +61,7 @@ protected:
 	virtual void get_supported_extensions(List<String> *r_extensions) const override;
 
 	virtual Error write_begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path) override;
-	virtual Error write_frame(const Ref<Image> &p_image, const int32_t *p_audio_data) override;
+	virtual Error write_frame(const bool p_is_frame_changing, const int32_t *p_audio_data) override;
 	virtual void write_end() override;
 
 	virtual bool handles_file(const String &p_path) const override;

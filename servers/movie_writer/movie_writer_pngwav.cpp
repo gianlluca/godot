@@ -137,16 +137,16 @@ Error MovieWriterPNGWAV::write_begin(const Size2i &p_movie_size, uint32_t p_fps,
 	return OK;
 }
 
-Error MovieWriterPNGWAV::write_frame(const Ref<Image> &p_image, const int32_t *p_audio_data) {
+Error MovieWriterPNGWAV::write_frame(const bool p_is_frame_changing, const int32_t *p_audio_data) {
 	ERR_FAIL_COND_V(!f_wav.is_valid(), ERR_UNCONFIGURED);
 
-	Vector<uint8_t> png_buffer = p_image->save_png_to_buffer();
+	// Vector<uint8_t> png_buffer = p_image->save_png_to_buffer();
 
-	Ref<FileAccess> fi = FileAccess::open(base_path + zeros_str(frame_count) + ".png", FileAccess::WRITE);
-	fi->store_buffer(png_buffer.ptr(), png_buffer.size());
-	f_wav->store_buffer((const uint8_t *)p_audio_data, audio_block_size);
+	// Ref<FileAccess> fi = FileAccess::open(base_path + zeros_str(frame_count) + ".png", FileAccess::WRITE);
+	// fi->store_buffer(png_buffer.ptr(), png_buffer.size());
+	// f_wav->store_buffer((const uint8_t *)p_audio_data, audio_block_size);
 
-	frame_count++;
+	// frame_count++;
 
 	return OK;
 }

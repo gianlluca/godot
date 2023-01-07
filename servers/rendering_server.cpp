@@ -2772,9 +2772,14 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_render_loop_enabled"), &RenderingServer::is_render_loop_enabled);
 	ClassDB::bind_method(D_METHOD("set_render_loop_enabled", "enabled"), &RenderingServer::set_render_loop_enabled);
 
+	ClassDB::bind_method(D_METHOD("is_frame_changing_enabled"), &RenderingServer::is_frame_changing_enabled);
+	ClassDB::bind_method(D_METHOD("set_is_frame_changing", "enabled"), &RenderingServer::set_is_frame_changing);
+
 	ClassDB::bind_method(D_METHOD("get_frame_setup_time_cpu"), &RenderingServer::get_frame_setup_time_cpu);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "render_loop_enabled"), "set_render_loop_enabled", "is_render_loop_enabled");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_frame_changing"), "set_is_frame_changing", "is_frame_changing_enabled");
 
 	BIND_ENUM_CONSTANT(RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME);
 	BIND_ENUM_CONSTANT(RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME);
@@ -2839,6 +2844,14 @@ bool RenderingServer::is_render_loop_enabled() const {
 
 void RenderingServer::set_render_loop_enabled(bool p_enabled) {
 	render_loop_enabled = p_enabled;
+}
+
+bool RenderingServer::is_frame_changing_enabled() const {
+	return is_frame_changing;
+}
+
+void RenderingServer::set_is_frame_changing(bool p_enabled) {
+	is_frame_changing = p_enabled;
 }
 
 RenderingServer::RenderingServer() {

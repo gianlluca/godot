@@ -3127,10 +3127,8 @@ bool Main::iteration() {
 	}
 
 	if (movie_writer) {
-		RID main_vp_rid = RenderingServer::get_singleton()->viewport_find_from_screen_attachment(DisplayServer::MAIN_WINDOW_ID);
-		RID main_vp_texture = RenderingServer::get_singleton()->viewport_get_texture(main_vp_rid);
-		Ref<Image> vp_tex = RenderingServer::get_singleton()->texture_2d_get(main_vp_texture);
-		movie_writer->add_frame(vp_tex);
+		bool is_frame_changing = RenderingServer::get_singleton()->is_frame_changing_enabled();
+		movie_writer->add_frame(is_frame_changing);
 	}
 
 	if (fixed_fps != -1) {

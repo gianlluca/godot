@@ -57,7 +57,7 @@ protected:
 	virtual AudioServer::SpeakerMode get_audio_speaker_mode() const;
 
 	virtual Error write_begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path);
-	virtual Error write_frame(const Ref<Image> &p_image, const int32_t *p_audio_data);
+	virtual Error write_frame(const bool p_is_frame_changing, const int32_t *p_audio_data);
 	virtual void write_end();
 
 	GDVIRTUAL0RC(uint32_t, _get_audio_mix_rate)
@@ -67,7 +67,7 @@ protected:
 	GDVIRTUAL0RC(Vector<String>, _get_supported_extensions)
 
 	GDVIRTUAL3R(Error, _write_begin, const Size2i &, uint32_t, const String &)
-	GDVIRTUAL2R(Error, _write_frame, const Ref<Image> &, GDExtensionConstPtr<int32_t>)
+	GDVIRTUAL2R(Error, _write_frame, bool, GDExtensionConstPtr<int32_t>)
 	GDVIRTUAL0(_write_end)
 
 	static void _bind_methods();
@@ -80,7 +80,7 @@ public:
 	static MovieWriter *find_writer_for_file(const String &p_file);
 
 	void begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path);
-	void add_frame(const Ref<Image> &p_image);
+	void add_frame(const bool p_is_frame_changing);
 
 	static void set_extensions_hint();
 

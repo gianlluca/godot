@@ -68,9 +68,9 @@ Error MovieWriter::write_begin(const Size2i &p_movie_size, uint32_t p_fps, const
 	return ret;
 }
 
-Error MovieWriter::write_frame(const Ref<Image> &p_image, const int32_t *p_audio_data) {
+Error MovieWriter::write_frame(const bool p_is_frame_changing, const int32_t *p_audio_data) {
 	Error ret = ERR_UNCONFIGURED;
-	GDVIRTUAL_REQUIRED_CALL(_write_frame, p_image, p_audio_data, ret);
+	GDVIRTUAL_REQUIRED_CALL(_write_frame, p_is_frame_changing, p_audio_data, ret);
 	return ret;
 }
 
@@ -94,8 +94,9 @@ void MovieWriter::get_supported_extensions(List<String> *r_extensions) const {
 
 void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path) {
 	project_name = GLOBAL_GET("application/config/name");
+	int _thread_count = GLOBAL_GET("editor/movie_writer/thread_count");
 
-	print_line(vformat("Movie Maker mode enabled, recording movie at %d FPS...", p_fps));
+	print_line(vformat("Movie Maker mode enabled, recording movie at %d FPS using %d threads...", p_fps, _thread_count));
 
 	// Check for available disk space and warn the user if needed.
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -138,6 +139,7 @@ void MovieWriter::_bind_methods() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/movie_writer/mix_rate", PROPERTY_HINT_RANGE, "8000,192000,1,suffix:Hz"), 48000);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/movie_writer/speaker_mode", PROPERTY_HINT_ENUM, "Stereo,3.1,5.1,7.1"), 0);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "editor/movie_writer/mjpeg_quality", PROPERTY_HINT_RANGE, "0.01,1.0,0.01"), 0.75);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/movie_writer/thread_count", PROPERTY_HINT_RANGE, "2,128,1,suffix:Threads"), 8);
 	// Used by the editor.
 	GLOBAL_DEF_BASIC("editor/movie_writer/movie_file", "");
 	GLOBAL_DEF_BASIC("editor/movie_writer/disable_vsync", false);
@@ -165,7 +167,7 @@ void MovieWriter::set_extensions_hint() {
 	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, "editor/movie_writer/movie_file", PROPERTY_HINT_GLOBAL_SAVE_FILE, ext_hint));
 }
 
-void MovieWriter::add_frame(const Ref<Image> &p_image) {
+void MovieWriter::add_frame(const bool p_is_frame_changing) {
 	const int movie_time_seconds = Engine::get_singleton()->get_frames_drawn() / fps;
 	const String movie_time = vformat("%s:%s:%s",
 			String::num(movie_time_seconds / 3600).pad_zeros(2),
@@ -179,7 +181,7 @@ void MovieWriter::add_frame(const Ref<Image> &p_image) {
 #endif
 
 	AudioDriverDummy::get_dummy_singleton()->mix_audio(mix_rate / fps, audio_mix_buffer.ptr());
-	write_frame(p_image, audio_mix_buffer.ptr());
+	write_frame(p_is_frame_changing, audio_mix_buffer.ptr());
 }
 
 void MovieWriter::end() {
