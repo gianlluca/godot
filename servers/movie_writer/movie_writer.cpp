@@ -144,6 +144,7 @@ void MovieWriter::_bind_methods() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/movie_writer/speaker_mode", PROPERTY_HINT_ENUM, "Stereo,3.1,5.1,7.1"), 0);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "editor/movie_writer/mjpeg_quality", PROPERTY_HINT_RANGE, "0.01,1.0,0.01"), 0.75);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/movie_writer/thread_count", PROPERTY_HINT_RANGE, "2,128,1,suffix:Threads"), 8);
+	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "editor/movie_writer/is_hdr"), false);
 	// Used by the editor.
 	GLOBAL_DEF_BASIC("editor/movie_writer/movie_file", "");
 	GLOBAL_DEF_BASIC("editor/movie_writer/disable_vsync", false);

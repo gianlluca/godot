@@ -61,7 +61,10 @@ class MovieWriterJPEGWAV : public MovieWriter {
 		Ref<Image> image;
 		String image_path;
 		float jpg_quality;
+		bool is_hdr;
 	};
+
+	bool is_hdr = false;
 
 	int thread_count = 8;
 	int thread_turn = 0;

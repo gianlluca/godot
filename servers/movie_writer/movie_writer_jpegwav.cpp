@@ -147,6 +147,7 @@ Error MovieWriterJPEGWAV::write_frame(const Ref<Image> &p_image, const int32_t *
 	fd->image = p_image;
 	fd->image_path = base_path + zeros_str(frame_count) + ".jpg";
 	fd->jpg_quality = quality;
+	fd->is_hdr = is_hdr;
 
 	threads[thread_turn].wait_to_finish();
 	threads[thread_turn].start(_thread_func, fd);
@@ -167,6 +168,15 @@ Error MovieWriterJPEGWAV::write_frame(const Ref<Image> &p_image, const int32_t *
 void MovieWriterJPEGWAV::_thread_func(void *p_userdata) {
 	FrameData *fd = (FrameData *)p_userdata;
 	Ref<FileAccess> fi = FileAccess::open(fd->image_path, FileAccess::WRITE);
+
+	if(fd->is_hdr)
+	{
+		for (int row = 0; row < fd->image->get_height(); row++) {
+			for (int col = 0; col < fd->image->get_width(); col++) {
+				fd->image->set_pixel(col, row, fd->image->get_pixel(col, row).linear_to_srgb());
+			}
+		}
+	}
 
 	Vector<uint8_t> jpg_buffer = fd->image->save_jpg_to_buffer(fd->jpg_quality);
 	fi->store_buffer(jpg_buffer.ptr(), jpg_buffer.size());
@@ -195,6 +205,8 @@ MovieWriterJPEGWAV::MovieWriterJPEGWAV() {
 	mix_rate = GLOBAL_GET("editor/movie_writer/mix_rate");
 	speaker_mode = AudioServer::SpeakerMode(int(GLOBAL_GET("editor/movie_writer/speaker_mode")));
 	quality = GLOBAL_GET("editor/movie_writer/mjpeg_quality");
+	
+	is_hdr = GLOBAL_GET("editor/movie_writer/is_hdr");
 
 	thread_count = GLOBAL_GET("editor/movie_writer/thread_count");
 	threads = new Thread[thread_count];
