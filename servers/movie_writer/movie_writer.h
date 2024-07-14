@@ -79,9 +79,6 @@ public:
     bool is_enabled();
     void set_is_enabled(bool p_enabled);
 	
-	void start_thread_pool(int p_thread_count);
-	void stop_thread_pool();
-
 	void write_frame(const Ref<Image> &p_image);
 	void write_end();
     

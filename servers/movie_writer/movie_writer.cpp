@@ -119,7 +119,7 @@ void MovieWriter::write_frame(const Ref<Image> &p_image) {
 	if(thread_turn == thread_count)
 		thread_turn = 0;
 
-	frame_count++;
+	frame_count++;	
 }
 
 void MovieWriter::_thread_func(void *p_userdata) {
@@ -136,6 +136,22 @@ void MovieWriter::write_end() {
 	for(int i = 0; i < thread_count; i++) {
 		threads[i].wait_to_finish();
 	}
+
+
+	const int movie_time_seconds = Engine::get_singleton()->get_frames_drawn() / fps;
+	const String movie_time = vformat("%s:%s:%s",
+			String::num(movie_time_seconds / 3600).pad_zeros(2),
+			String::num((movie_time_seconds % 3600) / 60).pad_zeros(2),
+			String::num(movie_time_seconds % 60).pad_zeros(2));
+
+	const int real_time_seconds = Time::get_singleton()->get_ticks_msec() / 1000;
+	const String real_time = vformat("%s:%s:%s",
+			String::num(real_time_seconds / 3600).pad_zeros(2),
+			String::num((real_time_seconds % 3600) / 60).pad_zeros(2),
+			String::num(real_time_seconds % 60).pad_zeros(2));
+
+	print_line(vformat("%d frames at %d FPS (movie length: %s), recorded in %s (%d%% of real-time speed).", Engine::get_singleton()->get_frames_drawn(), fps, movie_time, real_time, (float(movie_time_seconds) / real_time_seconds) * 100));
+	print_line("----------------");
 
   	delete [] threads;
 }
