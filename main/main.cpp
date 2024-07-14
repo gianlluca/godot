@@ -65,6 +65,7 @@
 #include "servers/arvr_server.h"
 #include "servers/audio_server.h"
 #include "servers/camera_server.h"
+#include "servers/movie_writer/movie_writer.h"
 #include "servers/navigation_2d_server.h"
 #include "servers/navigation_server.h"
 #include "servers/physics_2d_server.h"
@@ -114,6 +115,7 @@ static Physics2DServer *physics_2d_server = nullptr;
 static VisualServerCallbacks *visual_server_callbacks = nullptr;
 static NavigationServer *navigation_server = nullptr;
 static Navigation2DServer *navigation_2d_server = nullptr;
+static MovieWriter *movie_writer = nullptr;
 
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
@@ -1362,6 +1364,16 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		}
 	}
 
+	movie_writer = new MovieWriter();
+
+	if (!project_manager && !editor) { // game
+		if(movie_writer->is_enabled()) {
+			fixed_fps = movie_writer->get_target_fps();
+		}
+	} else {
+		movie_writer->set_is_enabled(false);
+	}
+
 #ifdef UNIX_ENABLED
 	// Print warning before initializing audio.
 	if (OS::get_singleton()->get_environment("USER") == "root" && !OS::get_singleton()->has_environment("GODOT_SILENCE_ROOT_WARNING")) {
@@ -2384,6 +2396,36 @@ bool Main::iteration() {
 		InputDefault::get_singleton()->flush_buffered_events();
 	}
 
+
+	/// MOVIE WRITER TESTS ///
+
+	// RID main_vp_rid = RenderingServer::get_singleton()->viewport_find_from_screen_attachment(DisplayServer::MAIN_WINDOW_ID);
+	// RID main_vp_texture = RenderingServer::get_singleton()->viewport_get_texture(main_vp_rid);
+	
+	// if (!project_manager && !editor) { // game
+	// 	SceneTree *sml = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
+	// 	Ref<Image> vp_tex = sml->get_root()->get_texture()->get_data();
+	// 	vp_tex->flip_y();
+	// 	vp_tex->save_jpg("D:/NxEvo/Current/screenshot.jpg", 0.9);
+	// }
+
+	// if (!project_manager && !editor) { // game
+	// 	if(movie_writer->is_enabled()) {
+	// 		SceneTree *sml = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
+	// 		Ref<Image> vp_img = sml->get_root()->get_texture()->get_data();
+
+	// 		movie_writer->write_frame(vp_img);
+	// 	}
+	// }
+
+	if(movie_writer->is_enabled()) {
+		SceneTree *sml = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
+		Ref<Image> vp_img = sml->get_root()->get_texture()->get_data();
+		movie_writer->write_frame(vp_img);
+	}
+
+	/// MOVIE WRITER TESTS ///
+
 	if (fixed_fps != -1) {
 		return exit;
 	}
@@ -2421,6 +2463,10 @@ void Main::force_redraw() {
 void Main::cleanup(bool p_force) {
 	if (!p_force) {
 		ERR_FAIL_COND(!_start_success);
+	}
+
+	if(movie_writer != nullptr) {
+		movie_writer->write_end();
 	}
 
 #ifdef RID_HANDLES_ENABLED
