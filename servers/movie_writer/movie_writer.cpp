@@ -17,17 +17,6 @@
 #include "movie_writer.h"
 
 
-String MovieWriter::zeros_str(uint32_t p_index) {
-	char zeros[MAX_TRAILING_ZEROS + 1];
-	for (uint32_t i = 0; i < MAX_TRAILING_ZEROS; i++) {
-		uint32_t idx = MAX_TRAILING_ZEROS - i - 1;
-		uint32_t digit = (p_index / uint32_t(Math::pow(double(10), double(idx)))) % 10;
-		zeros[i] = '0' + digit;
-	}
-	zeros[MAX_TRAILING_ZEROS] = 0;
-	return zeros;
-}
-
 int MovieWriter::get_target_fps() {
     return fps;
 }
@@ -59,40 +48,6 @@ void MovieWriter::_bind_methods() {
 	// ClassDB::bind_method(D_METHOD("editor", "movie_writer", "thread_count"), 8);
 }
 
-// OLD
-// void MovieWriter::write_frame(const Ref<Image> &p_image) {
-
-// 	// UPDATE WINDOW TITLE
-// 	const int movie_time_seconds = Engine::get_singleton()->get_frames_drawn() / fps;
-// 	const String movie_time = vformat("%s:%s:%s",
-// 			String::num(movie_time_seconds / 3600).pad_zeros(2),
-// 			String::num((movie_time_seconds % 3600) / 60).pad_zeros(2),
-// 			String::num(movie_time_seconds % 60).pad_zeros(2));
-
-// 	OS::get_singleton()->set_window_title(vformat("MovieWriter: Frame %d (time: %s) - %s (DEBUG)", Engine::get_singleton()->get_frames_drawn(), movie_time, project_name));
-    
-
-// 	FrameData* fd = new FrameData();
-	
-// 	// RID main_vp_rid = RenderingServer::get_singleton()->viewport_find_from_screen_attachment(DisplayServer::MAIN_WINDOW_ID);
-// 	// RID main_vp_texture = RenderingServer::get_singleton()->viewport_get_texture(main_vp_rid);
-// 	// Ref<Image> vp_tex = RenderingServer::get_singleton()->texture_2d_get(main_vp_texture);
-
-// 	fd->image = p_image;
-// 	fd->image_path = base_path + zeros_str(frame_count) + ".jpg";
-// 	fd->jpeg_quality = jpeg_quality;
-
-// 	threads[thread_turn].wait_to_finish();
-// 	threads[thread_turn].start(_thread_func, fd);
-
-// 	thread_turn++;
-
-// 	if(thread_turn == thread_count)
-// 		thread_turn = 0;
-
-// 	frame_count++;    
-// }
-
 
 void MovieWriter::write_frame(const Ref<Image> &p_image) {
 
@@ -105,24 +60,28 @@ void MovieWriter::write_frame(const Ref<Image> &p_image) {
 
 	OS::get_singleton()->set_window_title(vformat("MovieWriter: Frame %d (time: %s) - %s (DEBUG)", Engine::get_singleton()->get_frames_drawn(), movie_time, project_name));
     
-
+	// SAVE IMAGE DATA IN A STRUCT TO SEND TO THREAD FUCNTION
 	FrameData* fd = new FrameData();
 	fd->image = p_image;
-	fd->image_path = base_dir.get_basename() + "/" + base_file.get_basename() + zeros_str(frame_count) + "." + base_file.get_extension();
+	fd->image_path = base_dir.get_basename() + "/" + base_file.get_basename() + String::num_int64(frame_count).pad_zeros(8) + "." + base_file.get_extension();
 	fd->jpeg_quality = jpeg_quality;
 
+	// WAIT CURRENT TURN THREAD FINISH AND SEND THE NEW FRAME TO SAVE
 	threads[thread_turn].wait_to_finish();
 	threads[thread_turn].start(_thread_func, fd);
 
+	// LOOP THE THREAD TURN AROUN THREAD COUNT
+	// MOST LIKELY THAT WHEN THE TURN ROLLBACK THE THREAD IS ALREADY FINISHED
 	thread_turn++;
-
 	if(thread_turn == thread_count)
 		thread_turn = 0;
 
+	// INCREASE FRAME COUNT
 	frame_count++;	
 }
 
 void MovieWriter::_thread_func(void *p_userdata) {
+	// SAVE THE FRAME
 	FrameData *fd = (FrameData *)p_userdata;
 
 	fd->image->flip_y();
@@ -133,11 +92,14 @@ void MovieWriter::_thread_func(void *p_userdata) {
 
 
 void MovieWriter::write_end() {
+	// WAIT ALL THREADS FINISH AND FREE THE MEMORY
 	for(int i = 0; i < thread_count; i++) {
 		threads[i].wait_to_finish();
 	}
+  	delete [] threads;
 
 
+	// PRINT HOW MUCH TIME WAS SPEND ON RENDER
 	const int movie_time_seconds = Engine::get_singleton()->get_frames_drawn() / fps;
 	const String movie_time = vformat("%s:%s:%s",
 			String::num(movie_time_seconds / 3600).pad_zeros(2),
@@ -152,13 +114,13 @@ void MovieWriter::write_end() {
 
 	print_line(vformat("%d frames at %d FPS (movie length: %s), recorded in %s (%d%% of real-time speed).", Engine::get_singleton()->get_frames_drawn(), fps, movie_time, real_time, (float(movie_time_seconds) / real_time_seconds) * 100));
 	print_line("----------------");
-
-  	delete [] threads;
 }
 
 
 
 MovieWriter::MovieWriter() {
+	// EDITOR SETTINGS
+	
 	project_name = GLOBAL_GET("application/config/name");
 
     enabled = GLOBAL_DEF("movie_writer/enable", false);
@@ -177,7 +139,9 @@ MovieWriter::MovieWriter() {
 
 	thread_count = (int) GLOBAL_DEF("movie_writer/thread_count", 8);
 	ProjectSettings::get_singleton()->set_custom_property_info("movie_writer/thread_count", PropertyInfo(Variant::INT, "movie_writer/thread_count", PROPERTY_HINT_RANGE, "1,128,1"));
+	
 	threads = new Thread[thread_count];
 
-	print_line(vformat("Movie Maker mode enabled, recording movie using %d threads...", thread_count));
+	if(enabled)
+		print_line(vformat("Movie Maker mode enabled, recording movie using %d threads...", thread_count));
 }

@@ -2397,34 +2397,14 @@ bool Main::iteration() {
 	}
 
 
-	/// MOVIE WRITER TESTS ///
-
-	// RID main_vp_rid = RenderingServer::get_singleton()->viewport_find_from_screen_attachment(DisplayServer::MAIN_WINDOW_ID);
-	// RID main_vp_texture = RenderingServer::get_singleton()->viewport_get_texture(main_vp_rid);
-	
-	// if (!project_manager && !editor) { // game
-	// 	SceneTree *sml = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
-	// 	Ref<Image> vp_tex = sml->get_root()->get_texture()->get_data();
-	// 	vp_tex->flip_y();
-	// 	vp_tex->save_jpg("D:/NxEvo/Current/screenshot.jpg", 0.9);
-	// }
-
-	// if (!project_manager && !editor) { // game
-	// 	if(movie_writer->is_enabled()) {
-	// 		SceneTree *sml = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
-	// 		Ref<Image> vp_img = sml->get_root()->get_texture()->get_data();
-
-	// 		movie_writer->write_frame(vp_img);
-	// 	}
-	// }
-
-	if(movie_writer->is_enabled()) {
+	/// MOVIE WRITER ///
+	if(movie_writer->is_enabled()) { // game
 		SceneTree *sml = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
 		Ref<Image> vp_img = sml->get_root()->get_texture()->get_data();
 		movie_writer->write_frame(vp_img);
 	}
 
-	/// MOVIE WRITER TESTS ///
+	/// MOVIE WRITER ///
 
 	if (fixed_fps != -1) {
 		return exit;
