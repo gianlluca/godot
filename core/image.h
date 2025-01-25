@@ -325,6 +325,7 @@ public:
 
 	void fix_alpha_edges();
 	void premultiply_alpha();
+	void linear_to_srgb();
 	void srgb_to_linear();
 	void normalmap_to_xy();
 	Ref<Image> rgbe_to_srgb();

@@ -437,10 +437,16 @@
 				Shrinks the image by a factor of 2.
 			</description>
 		</method>
+		<method name="linear_to_srgb">
+			<return type="void" />
+			<description>
+				Converts the entire image from the linear colorspace to the sRGB colorspace. Only works on images with [constant FORMAT_RGB8] or [constant FORMAT_RGBA8] formats.
+			</description>
+		</method>
 		<method name="srgb_to_linear">
 			<return type="void" />
 			<description>
-				Converts the raw data from the sRGB colorspace to a linear scale.
+				Converts the raw data from the sRGB colorspace to a linear scale. Only works on images with [constant FORMAT_RGB8] or [constant FORMAT_RGBA8] formats.
 			</description>
 		</method>
 		<method name="unlock">
