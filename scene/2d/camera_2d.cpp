@@ -133,11 +133,13 @@ Transform2D Camera2D::get_camera_transform() {
 	Point2 new_camera_pos = get_global_position();
 	Point2 ret_camera_pos;
 
+	Vector2 camera_scale = get_global_transform().get_scale();
+
 	if (!first) {
 		if (anchor_mode == ANCHOR_MODE_DRAG_CENTER) {
 			if (drag_horizontal_enabled && !_is_editing_in_editor() && !drag_horizontal_offset_changed) {
-				camera_pos.x = MIN(camera_pos.x, (new_camera_pos.x + screen_size.x * 0.5 * zoom_scale.x * drag_margin[SIDE_LEFT]));
-				camera_pos.x = MAX(camera_pos.x, (new_camera_pos.x - screen_size.x * 0.5 * zoom_scale.x * drag_margin[SIDE_RIGHT]));
+				camera_pos.x = MIN(camera_pos.x, (new_camera_pos.x + screen_size.x * 0.5 * zoom_scale.x * camera_scale.x * drag_margin[SIDE_LEFT]));
+				camera_pos.x = MAX(camera_pos.x, (new_camera_pos.x - screen_size.x * 0.5 * zoom_scale.x * camera_scale.x * drag_margin[SIDE_RIGHT]));
 			} else {
 				if (drag_horizontal_offset < 0) {
 					camera_pos.x = new_camera_pos.x + screen_size.x * 0.5 * drag_margin[SIDE_RIGHT] * drag_horizontal_offset;
@@ -149,8 +151,8 @@ Transform2D Camera2D::get_camera_transform() {
 			}
 
 			if (drag_vertical_enabled && !_is_editing_in_editor() && !drag_vertical_offset_changed) {
-				camera_pos.y = MIN(camera_pos.y, (new_camera_pos.y + screen_size.y * 0.5 * zoom_scale.y * drag_margin[SIDE_TOP]));
-				camera_pos.y = MAX(camera_pos.y, (new_camera_pos.y - screen_size.y * 0.5 * zoom_scale.y * drag_margin[SIDE_BOTTOM]));
+				camera_pos.y = MIN(camera_pos.y, (new_camera_pos.y + screen_size.y * 0.5 * zoom_scale.y * camera_scale.y * drag_margin[SIDE_TOP]));
+				camera_pos.y = MAX(camera_pos.y, (new_camera_pos.y - screen_size.y * 0.5 * zoom_scale.y * camera_scale.y * drag_margin[SIDE_BOTTOM]));
 
 			} else {
 				if (drag_vertical_offset < 0) {
@@ -166,8 +168,8 @@ Transform2D Camera2D::get_camera_transform() {
 			camera_pos = new_camera_pos;
 		}
 
-		Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom_scale) : Point2());
-		Rect2 screen_rect(-screen_offset + camera_pos, screen_size * zoom_scale);
+		Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom_scale * camera_scale) : Point2());
+		Rect2 screen_rect(-screen_offset + camera_pos, screen_size * zoom_scale * camera_scale);
 
 		if (limit_smoothing_enabled) {
 			if (screen_rect.position.x < limit[SIDE_LEFT]) {
@@ -208,7 +210,7 @@ Transform2D Camera2D::get_camera_transform() {
 		first = false;
 	}
 
-	Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom_scale) : Point2());
+	Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom_scale * camera_scale) : Point2());
 
 	if (!ignore_rotation) {
 		if (rotation_smoothing_enabled && !_is_editing_in_editor()) {
@@ -220,7 +222,7 @@ Transform2D Camera2D::get_camera_transform() {
 		screen_offset = screen_offset.rotated(camera_angle);
 	}
 
-	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * zoom_scale);
+	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * zoom_scale * camera_scale);
 
 	if (!position_smoothing_enabled || !limit_smoothing_enabled) {
 		if (screen_rect.position.x < limit[SIDE_LEFT]) {
@@ -245,7 +247,7 @@ Transform2D Camera2D::get_camera_transform() {
 	}
 
 	Transform2D xform;
-	xform.scale_basis(zoom_scale);
+	xform.scale_basis(zoom_scale * camera_scale);
 	if (!ignore_rotation) {
 		xform.set_rotation(camera_angle);
 	}
