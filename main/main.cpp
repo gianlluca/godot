@@ -65,6 +65,7 @@
 #include "servers/arvr_server.h"
 #include "servers/audio_server.h"
 #include "servers/camera_server.h"
+#include "servers/movie_writer/movie_writer.h"
 #include "servers/navigation_2d_server.h"
 #include "servers/navigation_server.h"
 #include "servers/navigation_server_dummy.h"
@@ -115,6 +116,7 @@ static MessageQueue *message_queue = nullptr;
 // Initialized in setup2()
 static AudioServer *audio_server = nullptr;
 static CameraServer *camera_server = nullptr;
+static MovieWriter *movie_writer = nullptr;
 static ARVRServer *arvr_server = nullptr;
 static PhysicsServer *physics_server = nullptr;
 static Physics2DServer *physics_2d_server = nullptr;
@@ -1445,6 +1447,15 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		}
 	}
 
+	movie_writer = new MovieWriter();
+	if (!project_manager && !editor) { // game
+		if(movie_writer->is_enabled()) {
+			fixed_fps = movie_writer->get_target_fps();
+		}
+	} else {
+		movie_writer->set_is_enabled(false);
+	}
+
 #ifdef UNIX_ENABLED
 	// Print warning before initializing audio.
 	if (OS::get_singleton()->get_environment("USER") == "root" && !OS::get_singleton()->has_environment("GODOT_SILENCE_ROOT_WARNING")) {
@@ -2504,6 +2515,14 @@ bool Main::iteration() {
 		InputDefault::get_singleton()->flush_buffered_events();
 	}
 
+	/// MOVIE WRITER ///
+	if(movie_writer->is_enabled()) { // game
+		SceneTree *sml = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
+		Ref<Image> vp_img = sml->get_root()->get_texture()->get_data();
+		movie_writer->write_frame(vp_img);
+	}
+	/// MOVIE WRITER ///
+
 	if (fixed_fps != -1) {
 		return exit;
 	}
@@ -2542,6 +2561,10 @@ void Main::cleanup(bool p_force) {
 	OS::get_singleton()->benchmark_begin_measure("Main::cleanup");
 	if (!p_force) {
 		ERR_FAIL_COND(!_start_success);
+	}
+
+	if(movie_writer != nullptr) {
+		movie_writer->write_end();
 	}
 
 #ifdef RID_HANDLES_ENABLED
