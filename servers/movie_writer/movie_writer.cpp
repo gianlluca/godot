@@ -95,8 +95,9 @@ void MovieWriter::get_supported_extensions(List<String> *r_extensions) const {
 
 void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path) {
 	project_name = GLOBAL_GET("application/config/name");
+	int _thread_count = GLOBAL_GET("editor/movie_writer/thread_count");
 
-	print_line(vformat("Movie Maker mode enabled, recording movie at %d FPS...", p_fps));
+	print_line(vformat("Movie Maker mode enabled, recording movie at %d FPS using %d threads...", p_fps, _thread_count));
 
 	// Check for available disk space and warn the user if needed.
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -142,6 +143,9 @@ void MovieWriter::_bind_methods() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/movie_writer/mix_rate", PROPERTY_HINT_RANGE, "8000,192000,1,suffix:Hz"), 48000);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/movie_writer/speaker_mode", PROPERTY_HINT_ENUM, "Stereo,3.1,5.1,7.1"), 0);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "editor/movie_writer/mjpeg_quality", PROPERTY_HINT_RANGE, "0.01,1.0,0.01"), 0.75);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/movie_writer/thread_count", PROPERTY_HINT_RANGE, "2,128,1,suffix:Threads"), 8);
+	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "editor/movie_writer/is_hdr"), false);
+
 	// Used by the editor.
 	GLOBAL_DEF_BASIC("editor/movie_writer/movie_file", "");
 	GLOBAL_DEF_BASIC("editor/movie_writer/disable_vsync", false);
